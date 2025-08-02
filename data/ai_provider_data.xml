@@ -158,6 +158,14 @@
         <field name="max_files">5</field>
     </record>
 
+    <record id="ai_model_openrouter_deepseek" model="ai.model">
+        <field name="name">DeepSeek Chat v3</field>
+        <field name="provider_id" ref="ai_provider_openrouter"/>
+        <field name="technical_name">deepseek/deepseek-chat-v3-0324:free</field>
+        <field name="files_allowed" eval="True"/>
+        <field name="max_files">5</field>
+    </record>
+
     <!-- Google Gemini Models -->
     <record id="ai_model_gemini20_flash_lite" model="ai.model">
         <field name="name">Gemini 2.0 Flash-Lite</field>
