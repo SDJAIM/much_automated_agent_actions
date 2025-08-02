@@ -221,6 +221,59 @@ class GoogleGeminiService(AiService):
             raise UserError(_("Error calling Google Gemini API\n") + str(exc))
 
 
+class OpenRouterService(AiService):
+    """Implementation for OpenRouter service."""
+
+    def __init__(self, provider: Any, api_key: str, *args: Any, **kwargs: Any) -> None:
+        super().__init__(provider, api_key, *args, **kwargs)
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url="https://openrouter.ai/api/v1"
+        )
+
+    def generate_text(
+        self,
+        prompt: str,
+        model_name: str,
+        *,
+        files: Optional[AIFiles] = None,
+        **kwargs: Any,
+    ) -> str:
+        content: List[Dict[str, Any]] = []
+
+        for fd in self._get_file_data(files):
+            file_string = decode_string(fd.get("data"))
+            mime_type: str = fd.get("mimetype", "application/pdf")
+            is_image = is_image_mimetype(mime_type)
+            data = {
+                "type": "input_image" if is_image else "input_file",
+                (
+                    "image_url" if is_image else "file_data"
+                ): f"data:{mime_type};base64,{file_string}",
+            }
+            if not is_image:
+                data["filename"] = fd.get("filename", "document.pdf")
+            content.append(data)
+
+        prompt = self._prepare_prompt_with_chatter(prompt, files)
+        content.append({"type": "input_text", "text": prompt})
+
+        try:
+            response = self.client.responses.create(
+                model=model_name,
+                input=[
+                    {
+                        "role": "user",
+                        "content": content,
+                    },
+                ],
+            )
+            return response.output_text
+        except Exception as exc:  # noqa
+            _logger.error("Error calling OpenRouter API", exc_info=True)
+            raise UserError(_("Error calling OpenRouter API\n") + str(exc))
+
+
 class AiServiceFactory(models.AbstractModel):
     """Factory for creating AI service instances based on the provider."""
 
@@ -242,6 +295,7 @@ class AiServiceFactory(models.AbstractModel):
             "google": GoogleGeminiService,
             "openai": OpenAIService,
             "anthropic": AnthropicService,
+            "openrouter": OpenRouterService,
         }
 
     @api.model
