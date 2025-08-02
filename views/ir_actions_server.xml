@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_server_action_form" model="ir.ui.view">
+        <field name="name">ir.actions.server.form.inherit.ai</field>
+        <field name="model">ir.actions.server</field>
+        <field name="inherit_id" ref="base.view_server_action_form" />
+        <field name="arch" type="xml">
+            <group name="action_content" position="inside">
+                <field
+                    name="ai_model_id"
+                    required="state == 'generative_ai'"
+                    invisible="state != 'generative_ai'"
+                />
+                <field name="include_report_id" invisible="state != 'generative_ai'" />
+                <field
+                    name="include_all_attachments"
+                    invisible="state != 'generative_ai'"
+                />
+                <field name="include_chatter" invisible="state != 'generative_ai'" />
+                <field name="output_destination" invisible="state != 'generative_ai'" />
+                <field
+                    name="output_field_id"
+                    invisible="output_destination != 'field'"
+                    required="output_destination == 'field'"
+                />
+                <div
+                    id="warning_message"
+                    class="alert alert-warning text-center"
+                    role="alert"
+                    colspan="2"
+                    invisible="output_destination != 'field'"
+                >
+                    <p class="my-0">
+                        <i
+                            class="fa fa-warning"
+                        /> Updating a field will overwrite the current content of that field.
+                    </p>
+                </div>
+            </group>
+            <group name="action_wrapper" position="after">
+                <notebook invisible="state != 'generative_ai'">
+                    <page name="prompt_template" string="Prompt Template">
+                        <field
+                            name="prompt_template"
+                            required="state == 'generative_ai'"
+                        />
+                        <button
+                            name="action_preview_prompt"
+                            type="object"
+                            string="Preview Prompt"
+                            class="mt-5 btn-secondary"
+                        />
+                    </page>
+                </notebook>
+            </group>
+        </field>
+    </record>
+</odoo>
